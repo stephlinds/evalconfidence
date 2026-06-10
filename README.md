@@ -14,6 +14,8 @@ Existing frameworks *do* quantify uncertainty: Inspect AI computes per-eval stan
 
 That's the whole scope of this package: results in, rigorous comparison out. No model calls, no orchestration, no tracing.
 
+For the full technical argument — how dependence-blind SEs manufacture false wins at a real α of ~25–30%, how unpaired comparisons silently bury real improvements, and why underpowered evals cause *both* errors — see [docs/why-it-works.md](docs/why-it-works.md).
+
 ## How it works: the two-stage flow
 
 This package never makes API calls — `model_id` is just a grouping label, never an endpoint. The flow has two stages, and the package only lives in the second:
