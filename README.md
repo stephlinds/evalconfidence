@@ -2,7 +2,7 @@
 
 **Decision-grade statistics for AI evals.** A companion layer — not another framework — that adds paired comparisons, dependence-aware uncertainty, and power analysis on top of the eval stack you already use (Inspect AI, or anything that can produce a dataframe).
 
-> **Status: pre-release (v1 in progress).** `standard_error()` and the adapters work today; `compare()` and `power()` are landing next.
+> **Status: pre-release (v1 in progress).** `standard_error()`, `compare()`, and the adapters work today; `power()` is landing next.
 
 ## The gap, stated honestly
 
@@ -66,7 +66,7 @@ pip install -e ".[dev]"     # + pytest, pandas (for tests)
 
 - [x] `ItemResult` normalized representation + `from_inspect` + `from_dataframe`
 - [x] `standard_error()` — naive vs. cluster-robust side by side, inflation factor
-- [ ] `compare()` — paired comparison of two systems (paired-t / McNemar), variance-reduction factor, unpaired fallback with warning
+- [x] `compare()` — paired comparison of two systems (paired-t / McNemar), variance-reduction factor, unpaired fallback with warning
 - [ ] `power()` — required n ↔ minimum detectable effect, pairing- and cluster-aware
 - [ ] Demo notebook on GPQA Diamond (reproducible for under $5)
 
