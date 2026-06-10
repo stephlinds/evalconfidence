@@ -14,6 +14,17 @@ Existing frameworks *do* quantify uncertainty: Inspect AI computes per-eval stan
 
 That's the whole scope of this package: results in, rigorous comparison out. No model calls, no orchestration, no tracing.
 
+## How it works: the two-stage flow
+
+This package never makes API calls — `model_id` is just a grouping label, never an endpoint. The flow has two stages, and the package only lives in the second:
+
+1. **Generation (upstream, not this package).** An eval framework runs the model against the benchmark and grades outputs. This is where API calls, keys, and cost live. Inspect AI saves its own durable record automatically — a `.eval` log in `./logs/` with every prompt, response, and score per sample. A homegrown harness's CSV plays the same role.
+2. **Analysis (this package).** An adapter reads that already-existing record into the normalized `ItemResult` rows — `from_inspect()` for `.eval` logs, `from_dataframe()` for anything tabular — and the statistics functions compute on those fixed numbers. No model is ever consulted again.
+
+This separation is what makes analyses cheaply reproducible: pay for stage 1 once, keep the log/CSV, and re-run stage 2 forever for free.
+
+**What gets saved:** stage-1 artifacts are saved by whoever produced them (Inspect does this automatically). Stage-2 outputs are returned as in-memory dataclasses (`SEResult`, ...) — print them or serialize with `dataclasses.asdict()`; the package deliberately doesn't persist analysis results, because the saved stage-1 record is the thing worth keeping and the statistics re-run in milliseconds.
+
 ## Quick example
 
 ```python
