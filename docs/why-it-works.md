@@ -36,6 +36,8 @@ A hypothesis test is calibrated by its SE. If the SE is understated by factor c,
 | 0.6 | 3.4 | 1.84× | ~29% |
 | 1.0 (temp 0: identical epochs) | 5.0 | 2.24× | ~38% |
 
+How the columns are computed: "SE understated by" is √DEFF — the design effect inflates the *variance* of the mean, so the SE is off by its square root. "Real α" follows from re-expressing the rejection rule in honest units: the test rejects when the effect exceeds 1.96 × SE_naive, but the true SE is √DEFF × SE_naive, so the threshold actually applied is only z_eff = 1.96/√DEFF true standard errors, and the real false-positive rate is 2·Φ(−z_eff). Walking the ρ = 0.5 row: DEFF = 1 + 4(0.5) = 3.0 → √DEFF = 1.73 → z_eff = 1.96/1.73 = 1.13 → real α = 2·Φ(−1.13) ≈ 26%. (This treats the comparison as a z-test whose only flaw is the wrong SE; honest clustered inference also loses degrees of freedom — clusters, not observations — so these numbers are mildly conservative.)
+
 At realistic correlations, a team that believes it is running 5%-level tests is actually running ~25–30%-level tests. Roughly **one in four "significant" improvements is noise** — that is the false-win factory. The temperature-0 row is the limiting case that makes the logic vivid: identical epochs add *zero* information, yet the naive SE still shrinks by √5.
 
 ### What the package does
