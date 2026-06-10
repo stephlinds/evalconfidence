@@ -60,7 +60,7 @@ The fix is **within-item differencing**: compute d_i = score_A(i) − score_B(i)
 
 - Single-model SE: √(0.8·0.2/198) ≈ **2.8 points**.
 - Unpaired difference SE: √2 × 2.8 ≈ **4.0 points**. A true 2–3 point improvement sits well inside ±1.96·SE — *invisible*. Verdict: "no significant difference." That is the missed win.
-- Paired: suppose the models disagree on ~12% of items (typical when both are around 80% with shared difficulty). The per-item difference d_i is nonzero only on those items, giving Var(d_i) ≈ 0.12 and SE_d = √(0.12/198) ≈ **2.5 points** — a **~2.6× variance reduction** from the *same data, same spend*. A 3-point true gap is now near the detection boundary instead of buried, and a CI on the difference itself ([0.8, 5.2] rather than two overlapping marginal intervals) supports an actual decision.
+- Paired: suppose the models disagree on ~12% of items (typical when both are around 80% with shared difficulty). The per-item difference d_i is nonzero only on those items, giving Var(d_i) ≈ 0.12 and SE_d = √(0.12/198) ≈ **2.5 points** — a **~2.6× variance reduction** (variance is SE squared: (4.0/2.5)² = 0.32/0.12 ≈ 2.6, i.e. SEs shrank ~1.6×) from the *same data, same spend*. Variance is the resource-equivalent unit — it scales as 1/N, so this pairing bought the precision of running ~2.6× more items unpaired. A 3-point true gap is now near the detection boundary instead of buried, and a CI on the difference itself ([0.8, 5.2] rather than two overlapping marginal intervals) supports an actual decision.
 
 Pairing costs nothing — the data is already paired whenever both models ran the same benchmark. Not exploiting it is pure statistical waste, and the missed wins it causes are silent: nothing alerts you to the improvement you discarded.
 
