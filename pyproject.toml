@@ -24,6 +24,7 @@ classifiers = [
 [project.optional-dependencies]
 inspect = ["inspect-ai>=0.3"]
 dev = ["pytest>=7", "pandas>=2.0"]
+demo = ["matplotlib>=3.7", "jupyter>=1.0"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/evalconfidence"]
