@@ -127,3 +127,32 @@ class TestFromInspect:
 
         with pytest.raises(ValueError, match="Unrecognized"):
             from_inspect(log)
+
+
+class TestFromInspectRealLog:
+    """Integration against a genuine Inspect .eval log when one exists locally.
+
+    Generation logs live in logs/ (gitignored — they embed the gated GPQA
+    questions verbatim), so this class is skipped on CI and on fresh clones.
+    """
+
+    @pytest.fixture()
+    def real_log(self):
+        from pathlib import Path
+
+        logs = sorted((Path(__file__).parent.parent / "logs").rglob("*.eval"))
+        if not logs:
+            pytest.skip("no local .eval logs (generation has not been run here)")
+        return logs[0]
+
+    def test_parses_real_eval_log(self, real_log):
+        results = from_inspect(str(real_log))
+
+        assert len(results) >= 2
+        items = {r.item_id for r in results}
+        epochs = {r.epoch for r in results}
+        # rectangular: every item scored once per epoch
+        assert len(results) == len(items) * len(epochs)
+        assert all(r.score in (0.0, 1.0) for r in results)
+        assert all(r.correct in (True, False) for r in results)
+        assert len({r.model_id for r in results}) == 1

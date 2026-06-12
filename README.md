@@ -2,7 +2,7 @@
 
 **Decision-grade statistics for AI evals.** A companion layer — not another framework — that adds paired comparisons, dependence-aware uncertainty, and power analysis on top of the eval stack you already use (Inspect AI, or anything that can produce a dataframe).
 
-> **Status: pre-release (v1 in progress).** The full statistics layer works today: `standard_error()`, `compare()`, `power()`, and the adapters, plus a demo notebook ([examples/demo.ipynb](examples/demo.ipynb)) that runs with zero API keys, and CI on Python 3.10/3.12. Remaining for v1: re-render the notebook on real GPQA Diamond logs.
+> **Status: v1 feature-complete.** The full statistics layer: `standard_error()`, `compare()`, `power()`, the adapters, CI on Python 3.10/3.12, and a demo notebook ([examples/demo.ipynb](examples/demo.ipynb)) on real GPQA Diamond results (198 items × 5 epochs × 2 models) that re-runs from the committed scores CSV with zero API keys.
 
 ## The gap, stated honestly
 
@@ -44,31 +44,32 @@ This separation is what makes analyses cheaply reproducible: pay for stage 1 onc
 ```python
 from evalconfidence import from_inspect, compare, power, standard_error
 
-results_a = from_inspect("logs/..._gpqa_diamond_model-a.eval")  # 198 items x 5 epochs
-results_b = from_inspect("logs/..._gpqa_diamond_model-b.eval")
+results_a = from_inspect("logs/full/..._gpqa-diamond_....eval")  # 198 items x 5 epochs
+results_b = from_inspect("logs/full/..._gpqa-diamond_....eval")
 
 print(compare(results_a, results_b))          # pairs on shared items automatically
 print(standard_error(results_a))              # naive vs cluster-robust, side by side
-print(power((results_a, results_b), mde=0.03))  # items needed to detect 3 points
+print(power((results_a, results_b), mde=0.06))  # items needed to detect 6 points
 ```
 
-Output (from [the demo notebook](examples/demo.ipynb), where the true gap is known to be 4.5 points):
+Output — real GPQA Diamond results, gpt-5-nano vs gpt-5.4-mini at default settings (the committed scores CSV reproduces this without keys; see [the demo notebook](examples/demo.ipynb)):
 
 ```
-model-a is estimated to outperform model-b by 4.3 points, 95% CI [1.0, 7.7] (A−B).
-The difference is significant at alpha=0.05 (p=0.0122, paired_t).
-Pairing reduced the comparison variance by 4.5x: the 198 paired items deliver
-the precision of ~882 unpaired items.
+openai/gpt-5-nano-2025-08-07 is estimated to outperform openai/gpt-5.4-mini-2026-03-17
+by 5.9 points, 95% CI [0.4, 11.3] (A−B). The difference is significant at alpha=0.05
+(p=0.0363, paired_t).
+Pairing reduced the comparison variance by 2.1x: the 198 paired items deliver
+the precision of ~420 unpaired items.
 
-Mean score: 0.5576  (n=990 observations)
-  Naive i.i.d. SE:    0.0158  ->  95% CI [0.5266, 0.5886]
-  Cluster-robust SE:  0.0253  ->  95% CI [0.5076, 0.6075]  (198 clusters by item)
-  Inflation: 1.60x  (design effect 2.57)
+Mean score: 0.6758  (n=990 observations)
+  Naive i.i.d. SE:    0.0149  ->  95% CI [0.6465, 0.7050]
+  Cluster-robust SE:  0.0276  ->  95% CI [0.6213, 0.7302]  (198 clusters by item)
+  Inflation: 1.85x  (design effect 3.44)
 
-Detecting a 3.0 points gap at alpha=0.05 with 80% power requires ~510 paired items.
+Detecting a 6.0 points gap at alpha=0.05 with 80% power requires ~334 paired items.
 ```
 
-The same data, compared unpaired (the eyeball-the-two-intervals test), give 95% CI [−2.8, +11.5], p = 0.23 — a real 4.5-point improvement written off as noise. The full story, with figures, is in the [demo notebook](examples/demo.ipynb).
+The same data, compared unpaired (the eyeball-the-two-intervals test), give 95% CI [−2.1, +13.8], p = 0.15 — a real 5.9-point edge written off as noise. The full story, with figures and the pilot-based power analysis that designed the run, is in the [demo notebook](examples/demo.ipynb).
 
 Not on Inspect? Use the escape hatch:
 
@@ -92,7 +93,6 @@ pip install -e ".[demo]"    # + matplotlib, jupyter (for the demo notebook)
 - [x] `standard_error()` — naive vs. cluster-robust side by side, inflation factor
 - [x] `compare()` — paired comparison of two systems (paired-t / McNemar), variance-reduction factor, unpaired fallback with warning
 - [x] `power()` — required n ↔ minimum detectable effect, pairing- and cluster-aware
-- [x] Demo notebook — three figures (wrong winner / false confidence / budget planning) on a synthetic GPQA-shaped DGP, no API keys needed: [examples/demo.ipynb](examples/demo.ipynb)
-- [ ] Re-render the notebook on real GPQA Diamond logs (one generation run, reproducible for under $5)
+- [x] Demo notebook — three figures (wrong winner / false confidence / budget planning) on real GPQA Diamond data, generated for ~$4 and re-runnable from the committed CSV with no keys: [examples/demo.ipynb](examples/demo.ipynb)
 
 License: Apache-2.0
