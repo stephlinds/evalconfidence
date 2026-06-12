@@ -6,13 +6,25 @@
 
 ## The gap, stated honestly
 
-Existing frameworks *do* quantify uncertainty: Inspect AI computes per-eval standard errors via the CLT and offers bootstrapping for non-mean statistics. What they give you is a defensible standard error on a **single** score under an **independence** assumption. What they don't give you:
+Existing frameworks *do* quantify uncertainty: Inspect AI computes per-eval standard errors via the CLT, offers bootstrapping for non-mean statistics, and — since v0.3.64 (Feb 2025) — supports clustered standard errors via `stderr(cluster=...)` when you declare a grouping field. What they give you is a defensible standard error on a **single** score. What none of them give you (checked against the Inspect changelog and DeepEval metrics list, June 2026):
 
-- **Rigorous comparison between two systems** (paired tests that exploit shared items),
-- **Correction when the independence assumption breaks** (repeated epochs, shared prompt templates),
-- **Power / sample-size planning** before you spend the inference budget.
+- **Rigorous comparison between two systems** — paired tests that exploit shared items, a CI on the *difference*, McNemar for binary scores. The universal practice is still eyeballing two separate intervals, which is an unpaired test at its maximum variance.
+- **Power / sample-size planning** before you spend the inference budget — how many items to detect the gap you care about, or the smallest gap your benchmark can see at all.
+
+On dependence-aware uncertainty the gap is narrower and we say so: Inspect can cluster if you name the grouping up front. This package adds the **diagnostic** framing — naive and cluster-robust side by side with the inflation factor, epoch structure auto-detected — and works on results from any framework, not just Inspect tasks configured with custom metrics.
 
 That's the whole scope of this package: results in, rigorous comparison out. No model calls, no orchestration, no tracing.
+
+### Capability matrix
+
+| Capability | Existing frameworks | evalconfidence |
+|---|---|---|
+| Run / orchestrate / trace / score evals | Yes | No (consumes results) |
+| Single-score standard error | Yes (Inspect: CLT, bootstrap) | Re-derives, reported side by side |
+| Clustered standard errors | Partial (Inspect `stderr(cluster=...)`, declared field) | **Yes — auto-detected epochs, inflation factor, any framework** |
+| **Paired comparison of two systems** | No | **Yes — paired-t / McNemar, CI on the difference** |
+| **Power / minimum detectable effect** | No | **Yes — n ↔ MDE, pairing- and cluster-aware** |
+| Judge debiasing (PPI) | No | Planned (v2) |
 
 For the full technical argument — how dependence-blind SEs manufacture false wins at a real α of ~25–30%, how unpaired comparisons silently bury real improvements, and why underpowered evals cause *both* errors — see [docs/why-it-works.md](docs/why-it-works.md).
 
@@ -30,22 +42,33 @@ This separation is what makes analyses cheaply reproducible: pay for stage 1 onc
 ## Quick example
 
 ```python
-from evalconfidence import from_inspect, standard_error
+from evalconfidence import from_inspect, compare, power, standard_error
 
-results = from_inspect("logs/2026-06-10T12-00-00_gpqa_diamond.eval")
-print(standard_error(results))  # 198 items x 5 epochs
+results_a = from_inspect("logs/..._gpqa_diamond_model-a.eval")  # 198 items x 5 epochs
+results_b = from_inspect("logs/..._gpqa_diamond_model-b.eval")
+
+print(compare(results_a, results_b))          # pairs on shared items automatically
+print(standard_error(results_a))              # naive vs cluster-robust, side by side
+print(power((results_a, results_b), mde=0.03))  # items needed to detect 3 points
 ```
 
+Output (from [the demo notebook](examples/demo.ipynb), where the true gap is known to be 4.5 points):
+
 ```
-Mean score: 0.8424  (n=990 observations)
-  Naive i.i.d. SE:    0.0116  ->  95% CI [0.8197, 0.8651]
-  Cluster-robust SE:  0.0252  ->  95% CI [0.7926, 0.8922]  (198 clusters by item)
-  Inflation: 2.18x  (design effect 4.74)
-  The naive interval treats all 990 observations as independent; the cluster-robust
-  interval accounts for dependence within the 198 clusters and is the honest one to report.
+model-a is estimated to outperform model-b by 4.3 points, 95% CI [1.0, 7.7] (A−B).
+The difference is significant at alpha=0.05 (p=0.0122, paired_t).
+Pairing reduced the comparison variance by 4.5x: the 198 paired items deliver
+the precision of ~882 unpaired items.
+
+Mean score: 0.5576  (n=990 observations)
+  Naive i.i.d. SE:    0.0158  ->  95% CI [0.5266, 0.5886]
+  Cluster-robust SE:  0.0253  ->  95% CI [0.5076, 0.6075]  (198 clusters by item)
+  Inflation: 1.60x  (design effect 2.57)
+
+Detecting a 3.0 points gap at alpha=0.05 with 80% power requires ~510 paired items.
 ```
 
-The naive SE treated 990 observations as independent and shrank by ~√5; clustering by item recovers the true ~198-item precision. Teams quoting the smaller number call differences significant that aren't.
+The same data, compared unpaired (the eyeball-the-two-intervals test), give 95% CI [−2.8, +11.5], p = 0.23 — a real 4.5-point improvement written off as noise. The full story, with figures, is in the [demo notebook](examples/demo.ipynb).
 
 Not on Inspect? Use the escape hatch:
 
@@ -60,6 +83,7 @@ results = from_dataframe(df, item_id="qid", model_id="system", score="acc")
 pip install -e .            # core: numpy + scipy only
 pip install -e ".[inspect]" # + Inspect AI log reading
 pip install -e ".[dev]"     # + pytest, pandas (for tests)
+pip install -e ".[demo]"    # + matplotlib, jupyter (for the demo notebook)
 ```
 
 ## Roadmap (v1)
