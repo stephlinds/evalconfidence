@@ -2,7 +2,7 @@
 
 **Decision-grade statistics for AI evals.** A companion layer — not another framework — that adds paired comparisons, dependence-aware uncertainty, and power analysis on top of the eval stack you already use (Inspect AI, or anything that can produce a dataframe).
 
-> **Status: pre-release (v1 in progress).** The full statistics layer works today: `standard_error()`, `compare()`, `power()`, and the adapters, plus a demo notebook ([examples/demo.ipynb](examples/demo.ipynb)) that runs with zero API keys. Remaining for v1: re-render the notebook on real GPQA Diamond logs, and CI.
+> **Status: pre-release (v1 in progress).** The full statistics layer works today: `standard_error()`, `compare()`, `power()`, and the adapters, plus a demo notebook ([examples/demo.ipynb](examples/demo.ipynb)) that runs with zero API keys, and CI on Python 3.10/3.12. Remaining for v1: re-render the notebook on real GPQA Diamond logs.
 
 ## The gap, stated honestly
 
