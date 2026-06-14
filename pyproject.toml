@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "evalconfidence"
-version = "0.1.0"
+version = "0.1.1"
 description = "Decision-grade statistics for AI evals: paired comparisons, cluster-aware uncertainty, and power analysis on top of existing eval frameworks."
 readme = "README.md"
 license = "Apache-2.0"
