@@ -1,8 +1,12 @@
 # evalconfidence
 
+[![CI](https://github.com/stephlinds/evalconfidence/actions/workflows/ci.yml/badge.svg)](https://github.com/stephlinds/evalconfidence/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/evalconfidence.svg)](https://pypi.org/project/evalconfidence/)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 **Decision-grade statistics for AI evals.** A companion layer — not another framework — that adds paired comparisons, dependence-aware uncertainty, and power analysis on top of the eval stack you already use (Inspect AI, or anything that can produce a dataframe).
 
-> **Status: v1 feature-complete.** The full statistics layer: `standard_error()`, `compare()`, `power()`, the adapters, CI on Python 3.10/3.12, and a demo notebook ([examples/demo.ipynb](examples/demo.ipynb)) on real GPQA Diamond results (198 items × 5 epochs × 2 models) that re-runs from the committed scores CSV with zero API keys.
+> **Status: v0.1.0 — first public release.** The full statistics layer: `standard_error()`, `compare()`, `power()`, the adapters, CI on Python 3.10–3.13, and a demo notebook ([examples/demo.ipynb](examples/demo.ipynb)) on real GPQA Diamond results (198 items × 5 epochs × 2 models) that re-runs from the committed scores CSV with zero API keys.
 
 ## The gap, stated honestly
 
@@ -81,18 +85,29 @@ results = from_dataframe(df, item_id="qid", model_id="system", score="acc")
 ## Install
 
 ```bash
-pip install -e .            # core: numpy + scipy only
-pip install -e ".[inspect]" # + Inspect AI log reading
+pip install evalconfidence              # core: numpy + scipy only
+pip install "evalconfidence[inspect]"   # + Inspect AI log reading
+```
+
+For development (from a clone):
+
+```bash
 pip install -e ".[dev]"     # + pytest, pandas (for tests)
 pip install -e ".[demo]"    # + matplotlib, jupyter (for the demo notebook)
 ```
 
-## Roadmap (v1)
+## What's here (v0.1.0)
 
 - [x] `ItemResult` normalized representation + `from_inspect` + `from_dataframe`
 - [x] `standard_error()` — naive vs. cluster-robust side by side, inflation factor
 - [x] `compare()` — paired comparison of two systems (paired-t / McNemar), variance-reduction factor, unpaired fallback with warning
 - [x] `power()` — required n ↔ minimum detectable effect, pairing- and cluster-aware
 - [x] Demo notebook — three figures (wrong winner / false confidence / budget planning) on real GPQA Diamond data, generated for ~$4 and re-runnable from the committed CSV with no keys: [examples/demo.ipynb](examples/demo.ipynb)
+
+### On the roadmap
+
+- PPI (prediction-powered inference) for debiasing LLM-judge scores
+- Multiple-comparison correction for task suites
+- Possible upstream contribution to Inspect AI ([#4206](https://github.com/UKGovernmentBEIS/inspect_ai/issues/4206) tracks a related proposal)
 
 License: Apache-2.0
